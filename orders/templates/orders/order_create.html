@@ -1,0 +1,193 @@
+{% extends 'orders/base.html' %}
+
+{% block content %}
+<div class="container mt-4">
+    <h2 class="mb-4">Создание нового заказа</h2>
+
+    <form method="post" id="order-form">
+        {% csrf_token %}
+
+        <div class="card mb-4 shadow-sm">
+            <div class="card-header bg-primary text-white">
+                <h5 class="mb-0">Основная информация</h5>
+            </div>
+            <div class="card-body">
+                <div class="mb-3">
+                    <div class="mb-3 d-flex col-lg-4 col-md-6 col-sm-12 justify-content-between">
+                        <label for="{{ form.table_number.id_for_label }}" class="form-label">
+                            <i class="bi bi-cup-straw"></i> Номер стола
+                        </label>
+                        {{ form.table_number }}
+                    </div>
+
+                    {% if form.table_number.errors %}
+                        <div class="invalid-feedback d-block">
+                            {{ form.table_number.errors|join:", " }}
+                        </div>
+                    {% endif %}
+                </div>
+
+                {% if form.status %}
+                <div class="mb-3">
+                    <div class="mb-3 d-flex col-lg-4 col-md-6 col-sm-12 justify-content-between">
+                        <label for="{{ form.status.id_for_label }}" class="form-label">
+                            <i class="bi bi-list-check"></i> Статус
+                        </label>
+                        {{ form.status }}
+                    </div>
+                </div>
+                {% endif %}
+            </div>
+        </div>
+
+        <div class="card mb-4 shadow-sm">
+            <div class="card-header bg-primary text-white d-flex justify-content-between align-items-center">
+                <h5 class="mb-0">Состав заказа</h5>
+                <button type="button" class="btn btn-sm btn-light" id="add-item">
+                    <i class="bi bi-plus-circle"></i> Добавить блюдо
+                </button>
+            </div>
+            <div class="card-body">
+                <div class="table-responsive">
+                    <table class="table table-hover" id="items-table">
+                        <thead class="table-light">
+                            <tr>
+                                <th width="50%">Блюдо</th>
+                                <th width="30%">Цена</th>
+                                <th width="20%">Действие</th>
+                            </tr>
+                        </thead>
+                        <tbody id="items-body">
+                            <!-- Строки будут добавляться через JS -->
+                        </tbody>
+                    </table>
+                </div>
+
+
+                <div class="d-flex justify-content-end mt-3">
+                    <div class="fw-bold fs-5">
+                        Итого: <span id="total-amount">0</span> ₽
+                    </div>
+                </div>
+
+                <input type="hidden" name="items_json" id="items-json" value="{{ initial_items_json }}">
+            </div>
+        </div>
+
+        <div class="d-flex justify-content-between mt-4">
+            <button type="submit" class="btn btn-success px-4 py-2">
+                <i class="bi bi-check-circle"></i> Создать заказ
+            </button>
+            <a href="{% url 'order_list' %}" class="btn btn-outline-secondary px-4 py-2">
+                <i class="bi bi-x-circle"></i> Отмена
+            </a>
+        </div>
+    </form>
+</div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const itemsBody = document.getElementById('items-body');
+    const itemsJson = document.getElementById('items-json');
+    const totalAmount = document.getElementById('total-amount');
+
+    document.getElementById('add-item').addEventListener('click', function() {
+        addItemRow('', 0);
+    });
+
+    function addItemRow(name, price) {
+        const rowId = Date.now();
+        const row = document.createElement('tr');
+        row.dataset.id = rowId;
+        row.innerHTML = `
+            <td>
+                <input type="text" class="form-control item-name"
+                       placeholder="Название блюда" required>
+            </td>
+            <td>
+                <div class="input-group">
+                    <input type="number" step="0.01" min="0"
+                           class="form-control item-price"
+                           placeholder="Цена" required>
+                    <span class="input-group-text">₽</span>
+                </div>
+            </td>
+            <td class="text-center">
+                <button type="button" class="btn btn-md btn-danger remove-item mt-1">
+                    <i class="bi bi-trash">Удалить</i>
+                </button>
+            </td>
+        `;
+
+        if (name) row.querySelector('.item-name').value = name;
+        if (price) row.querySelector('.item-price').value = price;
+
+        itemsBody.appendChild(row);
+        updateItemsJson();
+    }
+
+    itemsBody.addEventListener('click', function(e) {
+        if (e.target.closest('.remove-item')) {
+            e.target.closest('tr').remove();
+            updateItemsJson();
+        }
+    });
+
+    function updateItemsJson() {
+        const items = {};
+        let total = 0;
+
+        document.querySelectorAll('#items-body tr').forEach(row => {
+            const name = row.querySelector('.item-name').value;
+            const price = parseFloat(row.querySelector('.item-price').value) || 0;
+
+            if (name) {
+                items[name] = price;
+                total += price;
+            }
+        });
+
+        itemsJson.value = JSON.stringify(items);
+        totalAmount.textContent = total.toFixed(2);
+    }
+
+    itemsBody.addEventListener('input', function(e) {
+        if (e.target.classList.contains('item-name') ||
+            e.target.classList.contains('item-price')) {
+            updateItemsJson();
+        }
+    });
+
+    try {
+        const initialItems = JSON.parse(itemsJson.value);
+        for (const [name, price] of Object.entries(initialItems)) {
+            addItemRow(name, price);
+        }
+    } catch (e) {
+        console.log("No initial items or parse error");
+    }
+});
+</script>
+
+<style>
+    .card {
+        border: none;
+        border-radius: 10px;
+    }
+    .card-header {
+        border-radius: 10px 10px 0 0 !important;
+    }
+    .form-control, .form-select {
+        padding: 10px 15px;
+    }
+    .remove-item {
+        transition: all 0.3s;
+    }
+    .remove-item:hover {
+        transform: scale(1.1);
+    }
+    #total-amount {
+        color: #0d6efd;
+    }
+</style>
+{% endblock %}

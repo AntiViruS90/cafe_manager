@@ -1,0 +1,7 @@
+{% extends 'orders/base.html' %}
+
+{% block content %}
+    <h2>Выручка за смену</h2>
+    <p><strong>Общая сумма оплаченных счетов: </strong>{{ total_revenue }} руб.</p>
+    <a href="{% url 'order_list' %}" class="btn btn-secondary">Назад</a>
+{% endblock content %}

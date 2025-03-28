@@ -1,0 +1,121 @@
+{% extends 'orders/base.html' %}
+
+{% block content %}
+<div class="container mt-4">
+    <h2>Редактирование заказа №{{ order.id }}</h2>
+
+    <form method="post" id="order-form">
+        {% csrf_token %}
+
+        <div class="card mb-4 shadow-sm">
+            <div class="card-header">Основная информация</div>
+            <div class="card-body">
+
+                <div class="mb-3">
+                    <div class="mb-3 d-flex col-lg-4 col-md-6 col-sm-12 justify-content-between">
+                        <label for="{{ form.table_number.id_for_label }}" class="form-label">
+                            {{ form.table_number.label }}
+                        </label>
+                        {{ form.table_number }}
+                    </div>
+
+                    {% if form.table_number.errors %}
+                        <div class="invalid-feedback">
+                            {{ form.table_number.errors|join:", " }}
+                        </div>
+                    {% endif %}
+                </div>
+
+                <div class="mb-3">
+                    <div class="mb-3 d-flex col-lg-4 col-md-6 col-sm-12 justify-content-between">
+                        <label for="{{ form.status.id_for_label }}" class="form-label">
+                            {{ form.status.label }}
+                        </label>
+                        {{ form.status }}
+                    </div>
+
+                    {% if form.status.errors %}
+                        <div class="invalid-feedback">
+                            {{ form.status.errors|join:", " }}
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+
+        {{ form.items_json }}
+
+        <div class="card mb-4 shadow-sm">
+            <div class="card-header">
+                Состав заказа
+                <button type="button" class="btn btn-sm btn-success float-end" id="add-item">
+                    + Добавить блюдо
+                </button>
+            </div>
+            <div class="card-body">
+                <table class="table" id="items-table">
+                    <thead>
+                        <tr>
+                            <th>Блюдо</th>
+                            <th>Цена</th>
+                            <th>Действие</th>
+                        </tr>
+                    </thead>
+                    <tbody id="items-body">
+                        {% for item in items %}
+                        <tr>
+                            <td><input type="text" class="form-control" name="item_name" value="{{ item.name }}" required></td>
+                            <td><input type="number" step="0.01" class="form-control" name="item_price" value="{{ item.price }}" required></td>
+                            <td><button type="button" class="btn btn-md btn-danger remove-item">Удалить</button></td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+                <input type="hidden" name="items_json" id="items-json" value="{{ initial_items_json }}">
+            </div>
+        </div>
+
+        <div class="d-flex justify-content-between">
+            <button type="submit" class="btn btn-success">Сохранить изменения</button>
+            <a href="{% url 'order_list' %}" class="btn btn-secondary">Отмена</a>
+        </div>
+    </form>
+</div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    document.getElementById('add-item').addEventListener('click', function() {
+        const tbody = document.getElementById('items-body');
+        const newRow = document.createElement('tr');
+        newRow.innerHTML = `
+            <td><input type="text" class="form-control" name="item_name" required></td>
+            <td><input type="number" step="0.01" class="form-control" name="item_price" required></td>
+            <td><button type="button" class="btn btn-md btn-danger remove-item">Удалить</button></td>
+        `;
+        tbody.appendChild(newRow);
+        updateItemsJson();
+    });
+
+    document.getElementById('items-body').addEventListener('click', function(e) {
+        if (e.target.classList.contains('remove-item')) {
+            e.target.closest('tr').remove();
+            updateItemsJson();
+        }
+    });
+
+    function updateItemsJson() {
+        const items = {};
+        document.querySelectorAll('#items-body tr').forEach(row => {
+            const name = row.querySelector('input[name="item_name"]').value;
+            const price = parseFloat(row.querySelector('input[name="item_price"]').value);
+            if (name && !isNaN(price)) {
+                items[name] = price;
+            }
+        });
+        document.getElementById('items-json').value = JSON.stringify(items);
+    }
+
+    document.getElementById('items-table').addEventListener('input', updateItemsJson);
+});
+</script>
+{% endblock %}

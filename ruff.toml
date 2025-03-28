@@ -1,0 +1,18 @@
+exclude = [
+    '.github',
+    '__pycache__',
+    'env/',
+    '*/migrations/*'
+]
+
+line-length = 79
+
+lint.select = [
+    "E",  # pycodestyle errors
+    "F",  # pyflakes errors
+    "W",  # pycodestyle warnings
+    "B",  # flake8-bugbear errors
+    "I",  # isort errors
+    "C",  # McCabe complexity checker
+]
+lint.ignore = ["F403"]

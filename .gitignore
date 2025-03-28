@@ -1,0 +1,9 @@
+env/
+.idea/
+.pytest_cache/
+.ruff_cache/
+htmlcov/
+tests/__pycache__/
+orders/__pycache__/
+orders/migrations/__pycache__/
+.coverage

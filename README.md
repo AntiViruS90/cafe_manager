@@ -3,14 +3,15 @@
 ### **Instruction to upload & install app:**
 
 
-| STEP | INSTRUCTION                                                                                             |
-|-----:|---------------------------------------------------------------------------------------------------------|
-|    1 | _Clone the repository to your PC:_<br/>```git clone git@github.com:AntiViruS90/python-project-49.git``` |
-|    2 | _Go to repository:_<br/> ```cd python-project-49```                                                     |
-|    3 | _Installation of dependencies:_ <br/>```make install```                                                 |
-|    3 | _Generates Django migration files:_ <br/>```make migrations```                                          |
-|    3 | _Applies migrations to the database:_ <br/>```make migrate```                                           |
-|    4 | _Run the app on localhost:_ <br/>```make build```                                                       |
+| STEP | INSTRUCTION                                                                                            |
+|-----:|--------------------------------------------------------------------------------------------------------|
+|    1 | _Clone the repository to your PC:_<br/>```git clone https://github.com/AntiViruS90/cafe_manager.git``` |
+|    2 | _Go to repository:_<br/> ```cd cafe_manager```                                                         |
+|    3 | _Installation of dependencies:_ <br/>```make install```                                                |
+|    4 | _Generates Django migration files:_ <br/>```make migrations```                                         |
+|    5 | _Applies migrations to the database:_ <br/>```make migrate```                                          |
+|    6 | _Run the app on localhost:_ <br/>```make build```                                                      |
+|    7 | _Go to localhost link:_ <br/>```http://127.0.0.1:8000/```                                              |
 
 
 ### **Tools in this ap**:
